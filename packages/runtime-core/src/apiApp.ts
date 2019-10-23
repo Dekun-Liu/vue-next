@@ -1,7 +1,7 @@
 import { Component, Data, validateComponentName } from './component'
 import { ComponentOptions } from './apiOptions'
 import { ComponentPublicInstance } from './componentProxy'
-import { Directive } from './directives'
+import { Directive, validateDirectiveName } from './directives'
 import { RootRenderFunction } from './createRenderer'
 import { InjectionKey } from './apiInject'
 import { isFunction, NO } from '@vue/shared'
@@ -28,6 +28,7 @@ export interface AppConfig {
   devtools: boolean
   performance: boolean
   readonly isNativeTag?: (tag: string) => boolean
+  isCustomElement?: (tag: string) => boolean
   errorHandler?: (
     err: Error,
     instance: ComponentPublicInstance | null,
@@ -62,6 +63,7 @@ export function createAppContext(): AppContext {
       devtools: true,
       performance: false,
       isNativeTag: NO,
+      isCustomElement: NO,
       errorHandler: undefined,
       warnHandler: undefined
     },
@@ -125,7 +127,10 @@ export function createAppAPI<HostNode, HostElement>(
       },
 
       directive(name: string, directive?: Directive) {
-        // TODO directive name validation
+        if (__DEV__) {
+          validateDirectiveName(name)
+        }
+
         if (!directive) {
           return context.directives[name] as any
         } else {
